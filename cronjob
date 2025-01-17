@@ -2,6 +2,6 @@
 # Runs the scraper every 8 hours and logs output
 
 # Run the scraper every minute for testing
-* * * * * root /usr/local/bin/python3 /app/scrape_iphones.py >> /var/log/cron/scraper.log 2>&1
+* * * * * /usr/local/bin/python3 /app/scrape_iphones.py >> /var/log/cron/scraper.log 2>&1
 
 # Empty line at the end is required
