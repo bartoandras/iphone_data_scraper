@@ -22,12 +22,37 @@ RUN apt-get update && apt-get install -y wget gnupg cron unzip curl \
     && apt-get install -y google-chrome-stable=132.0.6834.83-1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Install matching ChromeDriver version
-RUN CHROMEDRIVER_VERSION=$(curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE_132) \
-    && wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip \
-    && unzip /tmp/chromedriver.zip -d /usr/local/bin/ \
-    && rm /tmp/chromedriver.zip \
-    && chmod +x /usr/local/bin/chromedriver
+# Configure DNS and install network tools
+RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
+    echo "nameserver 8.8.4.4" >> /etc/resolv.conf && \
+    apt-get update && apt-get install -y \
+    dnsutils \
+    iputils-ping \
+    curl \
+    ca-certificates \
+    net-tools
+
+# Install matching ChromeDriver version with enhanced error handling
+RUN echo "Starting ChromeDriver installation..." && \
+    CHROMEDRIVER_VERSION=$(curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE_132) && \
+    echo "Resolving chromedriver.storage.googleapis.com..." && \
+    nslookup chromedriver.storage.googleapis.com && \
+    echo "Testing connection to Google Storage..." && \
+    curl -I https://chromedriver.storage.googleapis.com && \
+    echo "Downloading ChromeDriver version $CHROMEDRIVER_VERSION..." && \
+    for i in {1..5}; do \
+        echo "Attempt $i/5" && \
+        wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip && \
+        if [ $? -eq 0 ]; then break; else sleep 5; fi; \
+    done && \
+    if [ ! -f /tmp/chromedriver.zip ]; then \
+        echo "Failed to download ChromeDriver after 5 attempts"; \
+        exit 1; \
+    fi && \
+    unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
+    rm /tmp/chromedriver.zip && \
+    chmod +x /usr/local/bin/chromedriver && \
+    echo "ChromeDriver installation completed successfully"
 
 # Install Python dependencies
 COPY requirements.txt .
