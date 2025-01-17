@@ -158,7 +158,7 @@ def scrape_all_pages():
     options.add_argument('--window-size=1920,1080')
     
     # Initialize webdriver
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
+    driver = webdriver.Chrome(service=Service('/usr/local/bin/chromedriver'), options=options)
     
     try:
         # Navigate to first page
