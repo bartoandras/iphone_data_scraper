@@ -1,0 +1,6 @@
+# Python dependencies for iPhone Scraper
+# Required packages for web scraping and data processing
+
+selenium==4.8.0
+webdriver-manager==3.8.5
+python-dateutil==2.8.2

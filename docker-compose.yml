@@ -1,0 +1,13 @@
+# Docker Compose configuration for iPhone Scraper
+# Defines container setup and volume mounts
+
+version: '3.8'
+
+services:
+  iphone-scraper:
+    build: .
+    container_name: iphone-scraper
+    volumes:
+      - ./data:/app/data
+      - ./logs:/var/log/cron
+    restart: unless-stopped
