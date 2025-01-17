@@ -1,0 +1,65 @@
+{
+  "timestamp": "2025-01-17T17:21:49.046304",
+  "averages": {
+    "iPhone 11": {
+      "average_price": 81114.68,
+      "count": 47
+    },
+    "iPhone 14": {
+      "average_price": 240227.37,
+      "count": 63
+    },
+    "iPhone XS": {
+      "average_price": 64979.8,
+      "count": 5
+    },
+    "iPhone 12": {
+      "average_price": 109972.33,
+      "count": 51
+    },
+    "iPhone 13": {
+      "average_price": 181903.5,
+      "count": 70
+    },
+    "iPhone SE": {
+      "average_price": 44395.0,
+      "count": 22
+    },
+    "iPhone 8": {
+      "average_price": 41558.33,
+      "count": 12
+    },
+    "iPhone XR": {
+      "average_price": 54478.62,
+      "count": 8
+    },
+    "iPhone 15": {
+      "average_price": 328801.25,
+      "count": 28
+    },
+    "iPhone 7": {
+      "average_price": 37737.5,
+      "count": 8
+    },
+    "iPhone 16": {
+      "average_price": 447772.63,
+      "count": 19
+    },
+    "iPhone 6": {
+      "average_price": 20250.0,
+      "count": 2
+    },
+    "iPhone 5": {
+      "average_price": 15000.0,
+      "count": 1
+    },
+    "iPhone 38": {
+      "average_price": 55000.0,
+      "count": 1
+    },
+    "iPhone 2": {
+      "average_price": 150000.0,
+      "count": 1
+    }
+  }
+}

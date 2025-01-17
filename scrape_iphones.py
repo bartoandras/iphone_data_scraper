@@ -4,8 +4,13 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import csv
+import json
 import time
+import logging
+import re
+from datetime import datetime
+from collections import defaultdict
+from typing import Dict, List, Any
 
 def get_total_pages(driver):
     try:
@@ -33,16 +38,20 @@ def scrape_page(driver):
             price = price.replace('Ft', '').replace(' ', '').strip()
             
             # Extract condition
-            condition = 'N/A'
+            condition = None
             try:
                 condition = product.find_element(By.CSS_SELECTOR, '.text-centera span[style*="color: orange"]').text
+                if condition == 'N/A':
+                    condition = None
             except:
                 pass
             
             # Extract battery health
-            battery = 'N/A'
+            battery = None
             try:
                 battery = product.find_element(By.CSS_SELECTOR, '.text-centera span[style*="color: orange"] + span').text
+                if battery == 'N/A':
+                    battery = None
             except:
                 pass
             
@@ -60,6 +69,84 @@ def scrape_page(driver):
             print(f"Error processing product: {e}")
             continue
     
+    return data
+
+def analyze_url(url: str) -> Dict[str, Any]:
+    """Analyze the last segment of URL to determine iPhone model characteristics"""
+    try:
+        # Get the last segment of the URL
+        last_segment = url.lower().split('/')[-1]
+        
+        # Initialize result with default values
+        result = {
+            "model": None,
+            "pro": False,
+            "max": False,
+            "mini": False,
+            "se": False,
+            "capacity": None
+        }
+        
+        # Extract model number (iphone-xx where xx can be number or letters)
+        model_match = re.search(r'iphone[-\s_](\d{1,2}|[a-z]{2})', last_segment)
+        if model_match:
+            result["model"] = f"iPhone {model_match.group(1).upper()}"
+        
+        # Check for model variants in the last segment
+        result["pro"] = "pro" in last_segment
+        result["max"] = "max" in last_segment
+        result["mini"] = "mini" in last_segment
+        result["se"] = "se" in last_segment
+        
+        # Extract capacity as number
+        capacity_match = re.search(r'(\d+)\s?(gb|go)', last_segment)
+        if capacity_match:
+            result["capacity"] = int(capacity_match.group(1))
+            
+        return result
+        
+    except Exception as e:
+        print(f"Error analyzing URL {url}: {str(e)}")
+        return {
+            "pro": False,
+            "max": False,
+            "mini": False,
+            "se": False,
+            "capacity": False
+        }
+
+def calculate_average_prices(data: List[Dict[str, Any]]) -> Dict[str, Dict[str, float]]:
+    """Calculate average prices per iPhone model"""
+    model_prices = defaultdict(list)
+    
+    for entry in data:
+        if entry.get('price') and entry.get('model'):
+            try:
+                price = int(entry['price'])
+                model_prices[entry['model']].append(price)
+            except (ValueError, TypeError):
+                continue
+    
+    averages = {}
+    for model, prices in model_prices.items():
+        if prices:
+            avg_price = sum(prices) / len(prices)
+            averages[model] = {
+                'average_price': round(avg_price, 2),
+                'count': len(prices)
+            }
+    
+    return averages
+
+def extend_iphone_data(data: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Extend iPhone data with additional fields"""
+    for entry in data:
+        url = entry.get('url', '')
+        if url:
+            analysis = analyze_url(url)
+            entry.update(analysis)
+        else:
+            print(f"Entry missing URL: {entry}")
     return data
 
 def scrape_all_pages():
@@ -91,17 +178,30 @@ def scrape_all_pages():
             
             print(f"Scraping page {page}/{total_pages}")
             page_data = scrape_page(driver)
+            if len(page_data) == 0:
+                print("No listings found, ending scrape")
+                break
             all_data.extend(page_data)
             print(f"Found {len(page_data)} listings on this page")
         
-        # Save data to CSV
-        with open('iphone_data.csv', 'w', newline='', encoding='utf-8') as file:
-            fieldnames = ['model', 'price', 'condition', 'battery', 'url']
-            writer = csv.DictWriter(file, fieldnames=fieldnames)
-            writer.writeheader()
-            writer.writerows(all_data)
+        # Extend data with additional fields
+        extended_data = extend_iphone_data(all_data)
+        
+        # Save extended data to JSON
+        with open('iphone_data_extended.json', 'w', encoding='utf-8') as file:
+            json.dump(extended_data, file, ensure_ascii=False, indent=2)
             
-        print(f"Successfully scraped {len(all_data)} iPhones from {total_pages} pages")
+        # Calculate and save average prices
+        averages = calculate_average_prices(extended_data)
+        with open('iphone_averages.json', 'w', encoding='utf-8') as file:
+            json.dump({
+                'timestamp': datetime.now().isoformat(),
+                'averages': averages
+            }, file, ensure_ascii=False, indent=2)
+            
+        print(f"Successfully processed {len(extended_data)} iPhones from {total_pages} pages")
+        print(f"Extended data saved to iphone_data_extended.json")
+        print(f"Average prices saved to iphone_averages.json")
         
     finally:
         driver.quit()
