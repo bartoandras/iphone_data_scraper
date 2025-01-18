@@ -187,13 +187,17 @@ def scrape_all_pages():
         # Extend data with additional fields
         extended_data = extend_iphone_data(all_data)
         
-        # Save extended data to JSON
-        with open('/app/data/iphone_data_extended.json', 'w', encoding='utf-8') as file:
+        # Generate timestamp for filenames
+        timestamp = datetime.now().strftime('%Y-%m-%d-%H-%M')
+        
+        # Save extended data to JSON with timestamp
+        extended_filename = f'/app/data/iphone_data_extended-{timestamp}.json'
+        with open(extended_filename, 'w', encoding='utf-8') as file:
             json.dump(extended_data, file, ensure_ascii=False, indent=2)
             
-        # Calculate and save average prices
-        averages = calculate_average_prices(extended_data)
-        with open('/app/data/iphone_averages.json', 'w', encoding='utf-8') as file:
+        # Calculate and save average prices with timestamp
+        averages_filename = f'/app/data/iphone_averages-{timestamp}.json'
+        with open(averages_filename, 'w', encoding='utf-8') as file:
             json.dump({
                 'timestamp': datetime.now().isoformat(),
                 'averages': averages
