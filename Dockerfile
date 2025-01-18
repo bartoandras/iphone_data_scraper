@@ -30,27 +30,34 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     net-tools
 
-# Install matching ChromeDriver version with enhanced error handling
+# Install matching ChromeDriver version with enhanced error handling and DNS workaround
 RUN echo "Starting ChromeDriver installation..." && \
-    CHROMEDRIVER_VERSION=$(curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE_132) && \
-    echo "Resolving chromedriver.storage.googleapis.com..." && \
-    nslookup chromedriver.storage.googleapis.com && \
-    echo "Testing connection to Google Storage..." && \
-    curl -I https://chromedriver.storage.googleapis.com && \
-    echo "Downloading ChromeDriver version $CHROMEDRIVER_VERSION..." && \
-    for i in {1..5}; do \
-        echo "Attempt $i/5" && \
-        wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip && \
-        if [ $? -eq 0 ]; then break; else sleep 5; fi; \
-    done && \
-    if [ ! -f /tmp/chromedriver.zip ]; then \
-        echo "Failed to download ChromeDriver after 5 attempts"; \
-        exit 1; \
-    fi && \
-    unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
-    rm /tmp/chromedriver.zip && \
-    chmod +x /usr/local/bin/chromedriver && \
-    echo "ChromeDriver installation completed successfully"
+    ( \
+        echo "nameserver 8.8.8.8" > /etc/resolv.conf.tmp && \
+        echo "nameserver 8.8.4.4" >> /etc/resolv.conf.tmp && \
+        cp /etc/resolv.conf /etc/resolv.conf.bak && \
+        mv /etc/resolv.conf.tmp /etc/resolv.conf && \
+        CHROMEDRIVER_VERSION=$(curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE_132) && \
+        echo "Downloading ChromeDriver version $CHROMEDRIVER_VERSION..." && \
+        for i in {1..5}; do \
+            echo "Attempt $i/5" && \
+            wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip && \
+            if [ $? -eq 0 ]; then break; else sleep 5; fi; \
+        done && \
+        if [ ! -f /tmp/chromedriver.zip ]; then \
+            echo "Failed to download ChromeDriver after 5 attempts"; \
+            exit 1; \
+        fi && \
+        unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
+        rm /tmp/chromedriver.zip && \
+        chmod +x /usr/local/bin/chromedriver && \
+        mv /etc/resolv.conf.bak /etc/resolv.conf && \
+        echo "ChromeDriver installation completed successfully" \
+    ) || ( \
+        mv /etc/resolv.conf.bak /etc/resolv.conf && \
+        echo "ChromeDriver installation failed" && \
+        exit 1 \
+    )
 
 # Install Python dependencies
 COPY requirements.txt .
