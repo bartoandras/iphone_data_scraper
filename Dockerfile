@@ -33,8 +33,9 @@ RUN apt-get update && apt-get install -y \
 # Install matching ChromeDriver version with enhanced error handling
 RUN echo "Starting ChromeDriver installation..." && \
     ( \
-        CHROMEDRIVER_VERSION=$(curl -s --retry 5 --retry-delay 5 https://chromedriver.storage.googleapis.com/LATEST_RELEASE_132) && \
-        echo "Downloading ChromeDriver version $CHROMEDRIVER_VERSION..." && \
+        CHROME_VERSION=$(google-chrome --version | grep -oP '\d+\.\d+\.\d+') && \
+        CHROMEDRIVER_VERSION=$(curl -s --retry 5 --retry-delay 5 https://chromedriver.storage.googleapis.com/LATEST_RELEASE_$(echo $CHROME_VERSION | cut -d'.' -f1)) && \
+        echo "Downloading ChromeDriver version $CHROMEDRIVER_VERSION for Chrome $CHROME_VERSION..." && \
         for i in {1..5}; do \
             echo "Attempt $i/5" && \
             wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/$CHROMEDRIVER_VERSION/chromedriver_linux64.zip && \
