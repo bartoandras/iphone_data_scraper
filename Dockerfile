@@ -20,6 +20,7 @@ RUN apt-get update && apt-get install -y wget gnupg cron unzip curl \
     && sh -c 'echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" >> /etc/apt/sources.list.d/google-chrome.list' \
     && apt-get update \
     && apt-get install -y google-chrome-stable=132.0.6834.83-1 \
+    && google-chrome --version \
     && rm -rf /var/lib/apt/lists/*
 
 # Install network tools
@@ -32,11 +33,13 @@ RUN apt-get update && apt-get install -y \
 
 # Install specific ChromeDriver version with enhanced error handling
 RUN echo "Starting ChromeDriver installation..." && \
+    CHROME_VERSION=$(google-chrome --version | awk '{print $3}') && \
+    echo "Matching ChromeDriver version to Chrome version $CHROME_VERSION" && \
     ( \
-        echo "Downloading ChromeDriver version 132.0.6834.83..." && \
+        echo "Downloading ChromeDriver version $CHROME_VERSION..." && \
         for i in {1..5}; do \
             echo "Attempt $i/5" && \
-            wget -O /tmp/chromedriver.zip https://storage.googleapis.com/chrome-for-testing-public/132.0.6834.83/linux64/chromedriver-linux64.zip && \
+        wget -O /tmp/chromedriver.zip https://storage.googleapis.com/chrome-for-testing-public/$CHROME_VERSION/linux64/chromedriver-linux64.zip && \
             if [ $? -eq 0 ]; then break; else sleep 5; fi; \
         done && \
         if [ ! -f /tmp/chromedriver.zip ]; then \
