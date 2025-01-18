@@ -30,14 +30,10 @@ RUN apt-get update && apt-get install -y \
     ca-certificates \
     net-tools
 
-# Install matching ChromeDriver version with enhanced error handling and DNS workaround
+# Install matching ChromeDriver version with enhanced error handling
 RUN echo "Starting ChromeDriver installation..." && \
     ( \
-        echo "nameserver 8.8.8.8" > /etc/resolv.conf.tmp && \
-        echo "nameserver 8.8.4.4" >> /etc/resolv.conf.tmp && \
-        cp /etc/resolv.conf /etc/resolv.conf.bak && \
-        mv /etc/resolv.conf.tmp /etc/resolv.conf && \
-        CHROMEDRIVER_VERSION=$(curl -s https://chromedriver.storage.googleapis.com/LATEST_RELEASE_132) && \
+        CHROMEDRIVER_VERSION=$(curl -s --retry 5 --retry-delay 5 https://chromedriver.storage.googleapis.com/LATEST_RELEASE_132) && \
         echo "Downloading ChromeDriver version $CHROMEDRIVER_VERSION..." && \
         for i in {1..5}; do \
             echo "Attempt $i/5" && \
@@ -51,10 +47,8 @@ RUN echo "Starting ChromeDriver installation..." && \
         unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
         rm /tmp/chromedriver.zip && \
         chmod +x /usr/local/bin/chromedriver && \
-        mv /etc/resolv.conf.bak /etc/resolv.conf && \
         echo "ChromeDriver installation completed successfully" \
     ) || ( \
-        mv /etc/resolv.conf.bak /etc/resolv.conf && \
         echo "ChromeDriver installation failed" && \
         exit 1 \
     )
