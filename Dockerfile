@@ -36,17 +36,23 @@ RUN echo "Starting ChromeDriver installation..." && \
         echo "Downloading ChromeDriver version 132.0.6834.83..." && \
         for i in {1..5}; do \
             echo "Attempt $i/5" && \
-            wget -O /tmp/chromedriver.zip https://storage.googleapis.com/chrome-for-testing-public/132.0.6834.83/linux64/chrome-linux64.zip && \
+            wget -O /tmp/chromedriver.zip https://storage.googleapis.com/chrome-for-testing-public/132.0.6834.83/linux64/chromedriver-linux64.zip && \
             if [ $? -eq 0 ]; then break; else sleep 5; fi; \
         done && \
         if [ ! -f /tmp/chromedriver.zip ]; then \
             echo "Failed to download ChromeDriver after 5 attempts"; \
             exit 1; \
         fi && \
-        unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
-        rm /tmp/chromedriver.zip && \
-        chmod +x /usr/local/bin/chromedriver && \
-        echo "ChromeDriver installation completed successfully" \
+        unzip /tmp/chromedriver.zip -d /tmp/chromedriver && \
+        mv /tmp/chromedriver/chromedriver-linux64/chromedriver /usr/local/bin/ && \
+        rm -rf /tmp/chromedriver* && \
+        if [ -f /usr/local/bin/chromedriver ]; then \
+            chmod +x /usr/local/bin/chromedriver && \
+            echo "ChromeDriver installation completed successfully"; \
+        else \
+            echo "ChromeDriver binary not found after installation"; \
+            exit 1; \
+        fi \
     ) || ( \
         echo "ChromeDriver installation failed" && \
         exit 1 \
