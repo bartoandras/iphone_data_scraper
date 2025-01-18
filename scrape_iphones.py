@@ -188,12 +188,12 @@ def scrape_all_pages():
         extended_data = extend_iphone_data(all_data)
         
         # Save extended data to JSON
-        with open('iphone_data_extended.json', 'w', encoding='utf-8') as file:
+        with open('/app/data/iphone_data_extended.json', 'w', encoding='utf-8') as file:
             json.dump(extended_data, file, ensure_ascii=False, indent=2)
             
         # Calculate and save average prices
         averages = calculate_average_prices(extended_data)
-        with open('iphone_averages.json', 'w', encoding='utf-8') as file:
+        with open('/app/data/iphone_averages.json', 'w', encoding='utf-8') as file:
             json.dump({
                 'timestamp': datetime.now().isoformat(),
                 'averages': averages

@@ -1,7 +1,7 @@
 # Cron job configuration for iPhone Scraper
 # Runs the scraper every 8 hours and logs output
 
-# Run the scraper every minute for testing
-* * * * * /usr/local/bin/python3 /app/scrape_iphones.py >> /var/log/cron/scraper.log 2>&1
+# Run the scraper every 5 minutes
+*/5 * * * * /usr/local/bin/python3 /app/scrape_iphones.py >> /var/log/cron/scraper.log 2>&1
 
 # Empty line at the end is required
