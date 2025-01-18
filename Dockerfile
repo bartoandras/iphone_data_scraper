@@ -22,10 +22,8 @@ RUN apt-get update && apt-get install -y wget gnupg cron unzip curl \
     && apt-get install -y google-chrome-stable=132.0.6834.83-1 \
     && rm -rf /var/lib/apt/lists/*
 
-# Configure DNS and install network tools
-RUN echo "nameserver 8.8.8.8" > /etc/resolv.conf && \
-    echo "nameserver 8.8.4.4" >> /etc/resolv.conf && \
-    apt-get update && apt-get install -y \
+# Install network tools
+RUN apt-get update && apt-get install -y \
     dnsutils \
     iputils-ping \
     curl \
