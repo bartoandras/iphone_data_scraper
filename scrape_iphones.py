@@ -200,8 +200,12 @@ def scrape_all_pages():
                 print(f"Error saving entry to database: {e}")
                 continue
                 
+        # Calculate average prices
+        averages = calculate_average_prices(extended_data)
+        
         print(f"Successfully processed {len(extended_data)} iPhones from {total_pages} pages")
         print(f"Data saved to SQLite database")
+        print('averages:', averages)
         
     finally:
         driver.quit()
