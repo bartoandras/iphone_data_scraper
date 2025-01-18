@@ -4,13 +4,13 @@ from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
-import json
 import time
 import logging
 import re
 from datetime import datetime
 from collections import defaultdict
 from typing import Dict, List, Any
+from database import Database
 
 def get_total_pages(driver):
     try:
@@ -187,25 +187,21 @@ def scrape_all_pages():
         # Extend data with additional fields
         extended_data = extend_iphone_data(all_data)
         
-        # Generate timestamp for filenames
-        timestamp = datetime.now().strftime('%Y-%m-%d-%H-%M')
+        # Initialize database
+        db = Database()
         
-        # Save extended data to JSON with timestamp
-        extended_filename = f'/app/data/iphone_data_extended-{timestamp}.json'
-        with open(extended_filename, 'w', encoding='utf-8') as file:
-            json.dump(extended_data, file, ensure_ascii=False, indent=2)
-            
-        # Calculate and save average prices with timestamp
-        averages_filename = f'/app/data/iphone_averages-{timestamp}.json'
-        with open(averages_filename, 'w', encoding='utf-8') as file:
-            json.dump({
-                'timestamp': datetime.now().isoformat(),
-                'averages': averages
-            }, file, ensure_ascii=False, indent=2)
-            
+        # Save data to database
+        for entry in extended_data:
+            try:
+                # Convert price to integer
+                entry['price'] = int(entry['price'])
+                db.add_or_update_iphone(entry)
+            except Exception as e:
+                print(f"Error saving entry to database: {e}")
+                continue
+                
         print(f"Successfully processed {len(extended_data)} iPhones from {total_pages} pages")
-        print(f"Extended data saved to iphone_data_extended.json")
-        print(f"Average prices saved to iphone_averages.json")
+        print(f"Data saved to SQLite database")
         
     finally:
         driver.quit()

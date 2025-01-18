@@ -20,28 +20,27 @@ wheels/
 .installed.cfg
 *.egg
 
-# Virtual Environment
+# Database
+*.db
+*.sqlite3
+
+# Environment
+.env
+.venv
+env/
 venv/
 ENV/
-env/
+env.bak/
+venv.bak/
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
-*.sublime-workspace
-*.sublime-project
 
-# Logs and databases
+# Docker
+docker-compose.override.yml
+
+# Logs
 *.log
-*.sqlite
-
-# OS generated files
-.DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
